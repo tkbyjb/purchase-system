@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purchase.dao.mapper.ChatMapper">
+
+    <select id="getSendUserIds" resultMap="ChatLeftVo">
+        select sendUserId, max(createTime) maxCreateTime, count(isRead=0 or null) unreadCount
+        from t_chat where receiveUserId=#{receiveUserId} and isDelete=0  group by sendUserId
+    </select>
+    <resultMap id="ChatLeftVo" type="com.purchase.vo.chat.vo.ChatLeftVo">
+        <result property="userId" column="sendUserId" />
+        <result property="newestMessTime" column="maxCreateTime" />
+        <result property="unreadMessCount" column="unreadCount" />
+    </resultMap>
+
+    <select id="getMesss" resultMap="MessVo">
+        select content, createTime, (case sendUserId when #{receiveUserId} then 1 else 0 end) as type from t_chat
+        where isDelete=0 and (sendUserId=#{sendUserId} and receiveUserId=#{receiveUserId})
+          or (receiveUserId=#{sendUserId} and sendUserId=#{receiveUserId} )
+        order by createTime
+    </select>
+    <resultMap id="MessVo" type="com.purchase.vo.chat.vo.MessVo">
+        <result property="mess" column="content"/>
+        <result property="time" column="createTime"/>
+        <result property="type" column="type" />
+    </resultMap>
+</mapper>

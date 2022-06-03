@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purchase.dao.mapper.InquiryMapper">
+
+<!--    <resultMap type=".entity.Inquiry" id="InquiryMap">-->
+<!--        <result property="inquiryid" column="inquiryId" jdbcType="INTEGER"/>-->
+<!--        <result property="purchaseid" column="purchaseId" jdbcType="INTEGER"/>-->
+<!--        <result property="supplierid" column="supplierId" jdbcType="INTEGER"/>-->
+<!--        <result property="offer" column="offer" jdbcType="VARCHAR"/>-->
+<!--        <result property="totalprice" column="totalPrice" jdbcType="NUMERIC"/>-->
+<!--        <result property="state" column="state" jdbcType="INTEGER"/>-->
+<!--        <result property="isdelete" column="isDelete" jdbcType="INTEGER"/>-->
+<!--    </resultMap>-->
+
+    <select id="getInquiryBos" parameterType="com.purchase.vo.param.InquiryGetParam" resultMap="InquiryBo">
+        select * from t_inquiry where isDelete=0
+        <if test="param.state != null">
+           and state = #{param.state}
+        </if>
+        <if test="param.supplierId != null">
+           and supplierId = #{param.supplierId}
+        </if>
+        <if test="param.orderBys != null and param.orderBys.size() > 0">
+            order by
+            <foreach collection="param.orderBys" index="index" item="orderBy" separator=",">
+                <if test="orderBy.field =='createTime'">
+                    createTime
+                </if>
+                <if test="orderBy.field =='lastUpdateTime'">
+                    lastUpdateTime
+                </if>
+                <if test="orderBy.way == 'asc'">
+                    asc
+                </if>
+                <if test="orderBy.way == 'desc'">
+                    desc
+                </if>
+            </foreach>
+        </if>
+    </select>
+    <resultMap id="InquiryBo" type="com.purchase.dao.bo.InquiryBo">
+        <result property="inquiryId" column="inquiryId" />
+        <association property="inquiry" javaType="com.purchase.dao.po.Inquiry"
+                     column="inquiryId" select="com.purchase.dao.mapper.InquiryMapper.selectById" />
+        <association property="supplier" javaType="com.purchase.dao.po.Supplier"
+                     column="supplierId" select="com.purchase.dao.mapper.SpendingMapper.selectById" />
+        <association property="purchase" javaType="com.purchase.dao.po.Purchase"
+                     column="purchaseId" select="com.purchase.dao.mapper.PurchaseMapper.selectById" />
+        <association property="detail" javaType="com.purchase.dao.po.Detail"
+                     column="detailId" select="com.purchase.dao.mapper.DetailMapper.selectById" />
+    </resultMap>
+
+</mapper>
+

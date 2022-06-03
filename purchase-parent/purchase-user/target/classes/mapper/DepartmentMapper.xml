@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purchase.dao.mapper.DepartmentMapper">
+
+    <resultMap type="com.purchase.dao.po.Department" id="DepartmentMap">
+        <result property="departmentId" column="departmentId" jdbcType="INTEGER"/>
+        <result property="departmentname" column="departmentname" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="balance" column="balance" jdbcType="NUMERIC"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+        <result property="note" column="note" jdbcType="VARCHAR"/>
+        <result property="isDelete" column="isDelete" jdbcType="INTEGER"/>
+    </resultMap>
+
+
+    <update id="updatePart">
+        update t_department
+        <set>
+            <if test="param.departmentname != null and param.departmentname != ''">
+                departmentname = #{param.departmentname},
+            </if>
+            <if test="param.type != null">
+                type = #{param.type},
+            </if>
+            <if test="param.balance != null">
+                balance = #{param.balance},
+            </if>
+            <if test="param.note != null">
+                note = #{param.note},
+            </if>
+        </set>
+        where departmentId = #{param.departmentId} and isDelete=0
+    </update>
+
+</mapper>
+

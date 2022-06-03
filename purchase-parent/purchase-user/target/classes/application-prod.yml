@@ -1,0 +1,12 @@
+spring:
+  config:
+    activate:
+      on-profile:
+        - prod
+fastcollect-default-data:
+  AVATOR: https://s3.bmp.ovh/imgs/2022/04/17/9aef00554c9335e0.png
+  COLLECTION_NAME: 默认收藏集
+  #  默认头像上传路径
+  STATIC_SERVER_AVATOR_PATH: /software/static-server/avator/
+  #  默认头像地址
+  STATIC_SERVER_AVATOR_URL: http://static.fastcollect.xyz/avator/

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purchase.dao.mapper.ReviewMapper">
+
+    <resultMap type="com.purchase.dao.po.Review" id="ReviewMap">
+        <result property="reviewId" column="reviewId" jdbcType="INTEGER"/>
+        <result property="applyId" column="applyId" jdbcType="INTEGER"/>
+        <result property="userId" column="userId" jdbcType="INTEGER"/>
+        <result property="reviewType" column="reviewType" jdbcType="INTEGER"/>
+        <result property="result" column="result" jdbcType="INTEGER"/>
+        <result property="opinion" column="opinion" jdbcType="VARCHAR"/>
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <result property="balance" column="balance" jdbcType="NUMERIC"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+        <result property="isDelete" column="isDelete" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="getNewestReviewByApplyId" resultMap="ReviewMap">
+        select *  from t_review where isDelete=0 and createTime=(select max(createTime) from t_review where isDelete=0 and applyId=#{applyId})
+    </select>
+
+
+    <select id="getReviewBosByHistoryParam" resultMap="ReviewBoToHistory">
+        select * from t_review where isDelete=0 and userId=#{userId}
+        <if test="param.reviewType != null">
+            and reviewType = #{param.reviewType}
+        </if>
+        <if test="param.result != null">
+            and result = #{param.result}
+        </if>
+        <if test="param.startCreateTime != null and param.endCreateTime != null and param.startCreateTime != '' and param.endCreateTime != ''">
+            and DATE(createTime) between DATE(#{param.startCreateTime}) and DATE(#{param.endCreateTime})
+        </if>
+        <if test="param.orderBys != null and param.orderBys.size() > 0">
+            order by
+            <foreach collection="param.orderBys" index="index" item="orderBy" separator=",">
+                <if test="orderBy.field =='createTime'">
+                    createTime
+                </if>
+                <if test="orderBy.way == 'asc'">
+                    asc
+                </if>
+                <if test="orderBy.way == 'desc'">
+                    desc
+                </if>
+            </foreach>
+        </if>
+    </select>
+    <resultMap id="ReviewBoToHistory" type="com.purchase.dao.bo.ReviewBo">
+        <result property="reviewId" column="reviewId" />
+        <association property="review" javaType="com.purchase.dao.po.Review" resultMap="ReviewMap" />
+        <association property="reviewApplyBo" javaType="com.purchase.dao.bo.ApplyBo"
+                     column="applyId" select="com.purchase.dao.mapper.ApplyMapper.getApplyBoByApplyIdWithDeleted" />
+        <association property="reviewUser" javaType="com.purchase.dao.po.User"
+                     column="userId" select="com.purchase.dao.mapper.UserMapper.selectById" />
+        <association property="reviewCombBo" javaType="com.purchase.dao.bo.CombBo"
+                     column="combId" select="com.purchase.dao.mapper.CombMapper.getCombBoByCombIdWithDeleted" />
+    </resultMap>
+
+
+    <resultMap id="ReviewBo" type="com.purchase.dao.bo.ReviewBo">
+        <result property="reviewId" column="reviewId" />
+        <association property="review" javaType="com.purchase.dao.po.Review" resultMap="ReviewMap" />
+        <association property="reviewApplyBo" javaType="com.purchase.dao.bo.ApplyBo"
+                     column="applyId" select="com.purchase.dao.mapper.ApplyMapper.getApplyBoByApplyId" />
+        <association property="reviewUser" javaType="com.purchase.dao.po.User"
+                     column="userId" select="com.purchase.dao.mapper.UserMapper.selectById" />
+    </resultMap>
+
+    <update id="updateReviewState">
+        update t_review set state =#{state} where reviewId=#{reviewId}
+    </update>
+</mapper>
+

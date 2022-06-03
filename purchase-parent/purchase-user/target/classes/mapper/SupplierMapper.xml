@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purchase.dao.mapper.SupplierMapper">
+
+    <resultMap type="com.purchase.dao.po.Supplier" id="SupplierMap">
+        <result property="supplierId" column="supplierId" jdbcType="INTEGER"/>
+        <result property="suppliername" column="suppliername" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="tel" column="tel" jdbcType="VARCHAR"/>
+        <result property="loginname" column="loginname" jdbcType="VARCHAR"/>
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="introduce" column="introduce" jdbcType="VARCHAR"/>
+        <result property="agreement" column="agreement" jdbcType="INTEGER"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+        <result property="isDelete" column="isDelete" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="getSupplier" resultMap="SupplierMap">
+        select * from t_supplier where isDelete=0
+        <if test="param.suppliername != null and param.suppliername != ''">
+            and suppliername like concat('%', #{param.suppliername}, '%')
+        </if>
+        <if test="param.introduce != null and param.introduce != ''">
+            and introduce like concat('%', #{param.introduce}, '%')
+        </if>
+        <if test="param.agreement != null">
+            and agreement = #{param.agreement}
+        </if>
+        <if test="param.state != null">
+            and state = #{param.state}
+        </if>
+        <if test="param.orderBys != null and param.orderBys.size() > 0">
+            order by
+            <foreach collection="param.orderBys" index="index" item="orderBy" separator=",">
+                <if test="orderBy.field =='createTime'">
+                    createTime
+                </if>
+                <if test="orderBy.way == 'asc'">
+                    asc
+                </if>
+                <if test="orderBy.way == 'desc'">
+                    desc
+                </if>
+            </foreach>
+        </if>
+    </select>
+
+</mapper>
+

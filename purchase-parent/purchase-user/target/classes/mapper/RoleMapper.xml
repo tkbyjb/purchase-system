@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purchase.dao.mapper.RoleMapper">
+
+    <resultMap type="com.purchase.dao.po.Role" id="RoleMap">
+        <result property="roleId" column="roleId" jdbcType="INTEGER"/>
+        <result property="rolename" column="rolename" jdbcType="VARCHAR"/>
+        <result property="note" column="note" jdbcType="VARCHAR"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+        <result property="isDelete" column="isDelete" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="RoleMap">
+        select
+          roleId, rolename, note, state, isDelete
+        from t_role
+        where roleId = #{roleId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="RoleMap">
+        select
+          roleId, rolename, note, state, isDelete
+        from t_role
+        <where>
+            <if test="roleId != null">
+                and roleId = #{roleId}
+            </if>
+            <if test="rolename != null and rolename != ''">
+                and rolename = #{rolename}
+            </if>
+            <if test="note != null and note != ''">
+                and note = #{note}
+            </if>
+            <if test="state != null">
+                and state = #{state}
+            </if>
+            <if test="isDelete != null">
+                and isDelete = #{isDelete}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from t_role
+        <where>
+            <if test="roleId != null">
+                and roleId = #{roleId}
+            </if>
+            <if test="rolename != null and rolename != ''">
+                and rolename = #{rolename}
+            </if>
+            <if test="note != null and note != ''">
+                and note = #{note}
+            </if>
+            <if test="state != null">
+                and state = #{state}
+            </if>
+            <if test="isDelete != null">
+                and isDelete = #{isDelete}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+<!--    <insert id="insert" keyProperty="roleId" useGeneratedKeys="true">-->
+<!--        insert into t_role(rolename, note, state, isDelete)-->
+<!--        values (#{rolename}, #{note}, #{state}, #{isDelete})-->
+<!--    </insert>-->
+
+    <insert id="insertBatch" keyProperty="roleId" useGeneratedKeys="true">
+        insert into t_role(rolename, note, state, isDelete)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.rolename}, #{entity.note}, #{entity.state}, #{entity.isDelete})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="roleId" useGeneratedKeys="true">
+        insert into t_role(rolename, note, state, isDelete)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.rolename}, #{entity.note}, #{entity.state}, #{entity.isDelete})
+        </foreach>
+        on duplicate key update
+        rolename = values(rolename),
+        note = values(note),
+        state = values(state),
+        isDelete = values(isDelete)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_role
+        <set>
+            <if test="rolename != null and rolename != ''">
+                rolename = #{rolename},
+            </if>
+            <if test="note != null and note != ''">
+                note = #{note},
+            </if>
+            <if test="state != null">
+                state = #{state},
+            </if>
+            <if test="isDelete != null">
+                isDelete = #{isDelete},
+            </if>
+        </set>
+        where roleId = #{roleId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_role where roleId = #{roleId}
+    </delete>
+
+    <select id="getAllRoleBo" resultMap="RoleVo">
+        select t_role.*, t_menu.menuId ,t_menu.menuname,t_menu.icon,t_menu.note menunote,t_menu.parentId,t_menu.permission
+        from t_role, t_menu, t_role_menu where t_role.isDelete=0 and t_role.roleId=t_role_menu.roleId and t_menu.menuId=t_role_menu.menuId
+    </select>
+    <resultMap id="RoleVo" type="com.purchase.dao.bo.RoleBo">
+        <result property="roleId" column="roleId" />
+        <association property="role" javaType="com.purchase.dao.po.Role" resultMap="RoleMap" />
+        <collection property="menus" ofType="com.purchase.dao.po.Menu" autoMapping="true">
+            <result property="note" column="menunote" />
+        </collection>
+    </resultMap>
+
+
+    <select id="getRoles" resultType="com.purchase.dao.po.Role">
+        select * from t_role where isDelete=0
+        <if test="param.rolename != null and param.rolename != ''">
+            and rolename like  concat('%',#{param.rolename},'%')
+        </if>
+    </select>
+
+</mapper>
+

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purchase.dao.mapper.MenuMapper">
+
+    <resultMap type="com.purchase.dao.po.Menu" id="MenuMap">
+        <result property="menuId" column="menuId" jdbcType="INTEGER"/>
+        <result property="menuname" column="menuname" jdbcType="VARCHAR"/>
+        <result property="icon" column="icon" jdbcType="VARCHAR"/>
+        <result property="permission" column="permission" jdbcType="VARCHAR"/>
+        <result property="note" column="note" jdbcType="VARCHAR"/>
+        <result property="parentId" column="parentId" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="menuid" useGeneratedKeys="true">
+        insert into school_purchase.t_menu(menuname, icon, api, method, note, parentId)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.menuname}, #{entity.icon}, #{entity.api}, #{entity.method}, #{entity.note}, #{entity.parentid})
+        </foreach>
+    </insert>
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="menuid" useGeneratedKeys="true">
+        insert into school_purchase.t_menu(menuname, icon, api, method, note, parentId)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.menuname}, #{entity.icon}, #{entity.api}, #{entity.method}, #{entity.note}, #{entity.parentid})
+        </foreach>
+        on duplicate key update
+         menuname = values(menuname) , icon = values(icon) , api = values(api) , method = values(method) , note = values(note) , parentId = values(parentId)     </insert>
+
+    <select id="getRoleMenuByParentId" resultType="com.purchase.dao.po.Menu">
+        select t_menu.* from t_menu join t_role_menu on t_menu.menuId=t_role_menu.menuId where t_role_menu.roleId=#{roleId}
+        <if test="parentId == null">
+            and t_menu.parentId is null
+        </if>
+        <if test="parentId != null">
+            and t_menu.parentId =#{parentId}
+        </if>
+    </select>
+</mapper>
+

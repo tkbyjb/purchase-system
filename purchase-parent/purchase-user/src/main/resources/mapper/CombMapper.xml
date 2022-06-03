@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purchase.dao.mapper.CombMapper">
+
+    <resultMap type="com.purchase.dao.po.Comb" id="CombMap">
+        <result property="combId" column="combId" jdbcType="INTEGER"/>
+        <result property="serialNumber" column="serialNumber" jdbcType="VARCHAR"/>
+        <result property="combname" column="combname" jdbcType="VARCHAR"/>
+        <result property="note" column="note" jdbcType="VARCHAR"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <result property="createUserId" column="createUserId" jdbcType="INTEGER"/>
+        <result property="predictTotalPrice" column="predictTotalPrice" jdbcType="NUMERIC"/>
+        <result property="purchaseWay" column="purchaseWay" jdbcType="VARCHAR"/>
+        <result property="isDelete" column="isDelete" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="getCombs" resultMap="CombBo">
+        select * from t_comb where isDelete=0
+        <if test="param.combname != null and param.combname != ''">
+            and combname like concat('%', #{param.combname}, '%')
+        </if>
+        <if test="param.state != null">
+            and state = #{param.state}
+        </if>
+        <if test="param.createUserId != null">
+            and createUserId = #{param.createUserId}
+        </if>
+        <if test="param.confirmUserId != null">
+            and confirmUserId=#{param.confirmUserId}
+        </if>
+        <if test="param.purchaseWay != null">
+            and purchaseWay = #{param.purchaseWay}
+        </if>
+        <if test="param.serialNumber != null and param.serialNumber != ''">
+            and serialNumber like concat('%', #{param.serialNumber}, '%')
+        </if>
+        <if test="param.startCreateTime != null and param.endCreateTime != null and param.startCreateTime != '' and param.endCreateTime != ''">
+            and DATE(createTime) between DATE(#{param.startCreateTime}) and DATE(#{param.endCreateTime})
+        </if>
+        <if test="param.orderBys != null and param.orderBys.size() > 0">
+            order by
+            <foreach collection="param.orderBys" index="index" item="orderBy" separator=",">
+                <if test="orderBy.field =='createTime'">
+                    createTime
+                </if>
+                <if test="orderBy.way == 'asc'">
+                    asc
+                </if>
+                <if test="orderBy.way == 'desc'">
+                    desc
+                </if>
+            </foreach>
+        </if>
+    </select>
+    <resultMap id="CombBo" type="com.purchase.dao.bo.CombBo">
+        <result property="combId" column="combId" />
+        <association property="comb" javaType="com.purchase.dao.po.Comb"
+                     column="combId" select="com.purchase.dao.mapper.CombMapper.selectById" />
+        <association property="createUser" javaType="com.purchase.dao.po.User"
+                     column="createUserId" select="com.purchase.dao.mapper.UserMapper.selectById" />
+        <association property="confirmUser" javaType="com.purchase.dao.po.User"
+                     column="confirmUserId" select="com.purchase.dao.mapper.UserMapper.selectById" />
+    </resultMap>
+
+    <update id="updateCombState">
+        update t_comb set state =#{state} where isDelete=0 and combId=#{combId}
+    </update>
+    <update id="updateConfirmUserId">
+        update t_comb set confirmUserId =#{confirmUserId} where isDelete=0 and combId=#{combId}
+    </update>
+
+    <select id="getCombBoByCombIdWithDeleted" resultMap="CombBo">
+        select * from t_comb where combId=#{combId}
+    </select>
+</mapper>
+

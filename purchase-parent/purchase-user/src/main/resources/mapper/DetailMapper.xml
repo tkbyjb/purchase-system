@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purchase.dao.mapper.DetailMapper">
+
+    <resultMap type="com.purchase.dao.po.Detail" id="DetailMap">
+        <result property="detailId" column="detailId" jdbcType="INTEGER"/>
+        <result property="applyId" column="applyId" jdbcType="INTEGER"/>
+        <result property="serialNumber" column="serialNumber" jdbcType="VARCHAR"/>
+        <result property="detailname" column="detailname" jdbcType="VARCHAR"/>
+        <result property="count" column="count" jdbcType="INTEGER"/>
+        <result property="predictUnitPrice" column="predictUnitPrice" jdbcType="NUMERIC"/>
+        <result property="predictTotalPrice" column="predictTotalPrice" jdbcType="NUMERIC"/>
+        <result property="dealUnitPrice" column="dealUnitPrice" jdbcType="NUMERIC"/>
+        <result property="dealTotalPrice" column="dealTotalPrice" jdbcType="NUMERIC"/>
+        <result property="unit" column="unit" jdbcType="VARCHAR"/>
+        <result property="purchaseWay" column="purchaseWay" jdbcType="INTEGER"/>
+        <result property="note" column="note" jdbcType="VARCHAR"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+        <result property="spendingTypeId" column="spendingTypeId" jdbcType="INTEGER"/>
+        <result property="isDelete" column="isDelete" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 批量插入或按主键更新 -->
+<!--    <insert id="insertOrUpdateBatch" keyProperty="detailId" useGeneratedKeys="true">-->
+<!--        insert into school_purchase.t_detail(applyId, serialNumber, detailname, count, predictUnitPrice,-->
+<!--        predictTotalPrice, dealUnitPrice, dealTotalPrice, unit, purchaseWay, note, state, spendingTypeId, isDelete)-->
+<!--        values-->
+<!--        <foreach collection="entities" item="entity" separator=",">-->
+<!--            (#{entity.applyId}, #{entity.serialNumber}, #{entity.detailname}, #{entity.count},-->
+<!--            #{entity.predictUnitPrice}, #{entity.predictTotalPrice}, #{entity.dealUnitPrice}, #{entity.dealTotalPrice},-->
+<!--            #{entity.unit}, #{entity.purchaseWay}, #{entity.note}, #{entity.state}, #{entity.spendingTypeId},-->
+<!--            #{entity.isDelete})-->
+<!--        </foreach>-->
+<!--        on duplicate key update-->
+<!--        applyId = values(applyId) , serialNumber = values(serialNumber) , detailname = values(detailname) , count =-->
+<!--        values(count) , predictUnitPrice = values(predictUnitPrice) , predictTotalPrice = values(predictTotalPrice) ,-->
+<!--        dealUnitPrice = values(dealUnitPrice) , dealTotalPrice = values(dealTotalPrice) , unit = values(unit) ,-->
+<!--        purchaseWay = values(purchaseWay) , note = values(note) , state = values(state) , spendingTypeId =-->
+<!--        values(spendingTypeId) , isDelete = values(isDelete)-->
+<!--    </insert>-->
+
+    <update id="updateDetail" parameterType="com.purchase.vo.DetailUpdateVo">
+        update t_detail
+        <set>
+            <if test="detailUpdateVo.detailname != null and detailUpdateVo.detailname != ''">
+                detailname = #{detailUpdateVo.detailname},
+            </if>
+            <if test="detailUpdateVo.count != null and detailUpdateVo.count > 0">
+                count = #{detailUpdateVo.count},
+            </if>
+            <if test="detailUpdateVo.predictUnitPrice != null">
+                predictUnitPrice = #{detailUpdateVo.predictUnitPrice},
+            </if>
+            <if test="detailUpdateVo.predictTotalPrice != null">
+                predictTotalPrice = #{detailUpdateVo.predictTotalPrice},
+            </if>
+            <if test="detailUpdateVo.unit != null and detailUpdateVo.unit != ''">
+                unit = #{detailUpdateVo.unit},
+            </if>
+            <if test="detailUpdateVo.note != null and detailUpdateVo.note != ''">
+                note = #{detailUpdateVo.note},
+            </if>
+            <if test="detailUpdateVo.spendingTypeId != null">
+                spendingTypeId = #{detailUpdateVo.spendingTypeId},
+            </if>
+        </set>
+        where detailId = #{detailUpdateVo.detailId} and isDelete = 0
+    </update>
+
+    <update id="updatePurchaseWay">
+        update t_detail set purchaseWay=#{purchaseWay} where isDelete=0 and detailId in
+        <foreach collection="detailIds" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getUncombDetails" resultMap="DetailBo">
+        select t_detail.* from (select t_detail.* from t_detail where detailId not in (select detailId from t_detail_comb)) t_detail , t_apply
+        where t_detail.applyId=t_apply.applyId and t_apply.isDelete=0 and t_detail.isDelete=0
+          and t_apply.putoff=0
+        <if test="param.applySerialNumber != null and param.applySerialNumber != ''">
+            and t_apply.serialNumber like concat('%', #{param.applySerialNumber}, '%')
+        </if>
+        <if test="param.detailname != null and param.detailname != ''">
+            and t_detail.detailname like concat('%', #{param.detailname}, '%')
+        </if>
+        <if test="param.departmentId != null">
+            and t_apply.applyDepartmentId = #{param.departmentId}
+        </if>
+        <if test="param.purchaseWay != null">
+            and t_detail.purchaseWay = #{param.purchaseWay}
+        </if>
+        <if test="param.spendingTypeId != null and param.spendingTypeId != 0">
+            and t_detail.spendingTypeId = #{param.spendingTypeId}
+        </if>
+    </select>
+    <resultMap id="DetailBo" type="com.purchase.dao.bo.DetailBo">
+        <result property="detailId" column="detailId"/>
+        <association property="detail" javaType="com.purchase.dao.po.Detail"
+                     column="detailId" select="com.purchase.dao.mapper.DetailMapper.selectById"/>
+        <association property="spendingType" javaType="com.purchase.dao.po.SpendingType"
+                     column="spendingTypeId" select="com.purchase.dao.mapper.SpendingTypeMapper.selectById"/>
+    </resultMap>
+
+    <update id="updateState">
+        update t_detail set state =#{state} where isDelete=0 and detailId in
+        <foreach collection="detailIds" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getCombDetails" resultMap="DetailBo">
+        select t_detail.* from t_detail join t_detail_comb on t_detail.detailId=t_detail_comb.detailId and t_detail.isDelete=0
+        and t_detail_comb.combId=#{combId}
+    </select>
+</mapper>
+

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purchase.dao.mapper.SpendingMapper">
+
+    <select id="getSpendingTypePercentage" resultMap="SpendingBo">
+        select spendingTypeId, sum(amount) allAmount from t_spending where isDelete=0
+        <include refid="betweenTime"></include>
+        <if test="param.departmentId != null">
+            and departmentId = #{param.departmentId}
+        </if>
+        group by spendingTypeId
+    </select>
+    <resultMap id="SpendingBo" type="com.purchase.dao.bo.SpendingBo">
+        <!--        <result property="spendingId" column="spendingId" />-->
+        <result property="spendingTypeId" column="spendingTypeId"/>
+        <result property="amount" column="allAmount"/>
+        <!--        <association property="spending" javaType="com.purchase.dao.po.Spending"-->
+        <!--                     column="spendingId" select="com.purchase.dao.mapper.SpendingMapper.selectById" />-->
+        <association property="spendingType" javaType="com.purchase.dao.po.SpendingType"
+                     column="spendingTypeId" select="com.purchase.dao.mapper.SpendingTypeMapper.selectById"/>
+    </resultMap>
+
+
+    <sql id="betweenTime">
+        <if test="param.startTime != null and param.startTime != ''">
+            and DATE(createTime) between DATE(#{param.startTime})
+        </if>
+        <if test="param.startTime == null or param.startTime == ''">
+            and DATE(createTime) between DATE('1800-01-01')
+        </if>
+        <if test="param.endTime != null and param.endTime != ''">
+            and DATE(#{param.endTime})
+        </if>
+        <if test="param.endTime == null or param.endTime == ''">
+            and DATE(NOW())
+        </if>
+    </sql>
+
+
+    <select id="getBuydPurchaseCountByDay" resultMap="PurchaseCountVo">
+        select count(*) acount, DATE(createTime) adate, sum(amount) amount from t_spending where isDelete=0
+        <if test="param.departmentId != null">
+            and departmentId = #{param.departmentId}
+        </if>
+        <include refid="betweenTime"></include>
+        group by DATE(createTime) order by DATE(createTime) asc
+    </select>
+    <resultMap id="PurchaseCountVo" type="com.purchase.vo.statistics.vo.PurchaseCountVo">
+        <result property="count" column="acount"/>
+        <result property="date" column="adate"/>
+        <result property="amount" column="amount"/>
+    </resultMap>
+
+    <select id="getBuydPurchaseCountByMonth" resultMap="PurchaseCountVo">
+        select count(*) acount,  DATE_FORMAT(createTime, '%Y %m') adate, sum(amount) amount
+        from t_spending where isDelete=0
+        <if test="param.departmentId != null">
+            and departmentId = #{param.departmentId}
+        </if>
+        <include refid="betweenTime"></include>
+        group by DATE_FORMAT(createTime, '%Y %m') order by DATE_FORMAT(createTime, '%Y %m') asc
+    </select>
+
+    <select id="getBuydPurchaseCountByYear" resultMap="PurchaseCountVo">
+        select count(*) acount,  DATE_FORMAT(createTime, '%Y') adate, sum(amount) amount
+        from t_spending where isDelete=0
+        <if test="param.departmentId != null">
+            and departmentId = #{param.departmentId}
+        </if>
+        <include refid="betweenTime"></include>
+        group by DATE_FORMAT(createTime, '%Y') order by DATE_FORMAT(createTime, '%Y') asc
+    </select>
+
+
+
+
+
+
+    <select id="getApplyCountByDay" resultMap="PurchaseCountVo">
+        select count(*) acount,  DATE(t_apply.createTime) adate, sum(t_detail.predictTotalPrice) amount
+        from t_apply join t_detail on t_apply.applyId=t_detail.applyId
+        where t_apply.isDelete=0 and t_detail.isDelete=0
+        <if test="param.departmentId != null">
+            and t_apply.applyDepartmentId = #{param.departmentId}
+        </if>
+        <include refid="betweenTime2"></include>
+        group by DATE(t_apply.createTime) order by DATE(t_apply.createTime) asc
+    </select>
+
+    <select id="getApplyCountByMonth" resultMap="PurchaseCountVo">
+        select count(*) acount,  DATE_FORMAT(t_apply.createTime, '%Y %m') adate, sum(t_detail.predictTotalPrice) amount
+        from t_apply join t_detail on t_apply.applyId=t_detail.applyId
+        where t_apply.isDelete=0 and t_detail.isDelete=0
+        <if test="param.departmentId != null">
+            and t_apply.applyDepartmentId = #{param.departmentId}
+        </if>
+        <include refid="betweenTime2"></include>
+        group by DATE_FORMAT(t_apply.createTime, '%Y %m') order by DATE_FORMAT(t_apply.createTime, '%Y %m') asc
+    </select>
+
+    <select id="getApplyCountByYear" resultMap="PurchaseCountVo">
+        select count(*) acount,  DATE_FORMAT(t_apply.createTime, '%Y') adate, sum(t_detail.predictTotalPrice) amount
+        from t_apply join t_detail on t_apply.applyId=t_detail.applyId
+        where t_apply.isDelete=0 and t_detail.isDelete=0
+        <if test="param.departmentId != null">
+            and t_apply.applyDepartmentId = #{param.departmentId}
+        </if>
+        <include refid="betweenTime2"></include>
+        group by DATE_FORMAT(t_apply.createTime, '%Y') order by DATE_FORMAT(t_apply.createTime, '%Y') asc
+    </select>
+
+    <sql id="betweenTime2">
+        <if test="param.startTime != null and param.startTime != ''">
+            and DATE(t_apply.createTime) between DATE(#{param.startTime})
+        </if>
+        <if test="param.startTime == null or param.startTime == ''">
+            and DATE(t_apply.createTime) between DATE('1800-01-01')
+        </if>
+        <if test="param.endTime != null and param.endTime != ''">
+            and DATE(#{param.endTime})
+        </if>
+        <if test="param.endTime == null or param.endTime == ''">
+            and DATE(NOW())
+        </if>
+    </sql>
+</mapper>
+

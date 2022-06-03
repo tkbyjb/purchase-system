@@ -1,0 +1,47 @@
+{
+  "groups": [
+    {
+      "name": "purchase-default-data",
+      "type": "com.purchase.global.DefaultData",
+      "sourceType": "com.purchase.global.DefaultData"
+    }
+  ],
+  "properties": [
+    {
+      "name": "purchase-default-data.a-t-t-a-c-h-m-e-n-t-a-c-c-e-s-s-b-a-s-e-u-r-l",
+      "type": "java.lang.String",
+      "sourceType": "com.purchase.global.DefaultData"
+    },
+    {
+      "name": "purchase-default-data.a-v-a-t-a-r-a-c-c-e-s-s-b-a-s-e-u-r-l",
+      "type": "java.lang.String",
+      "sourceType": "com.purchase.global.DefaultData"
+    },
+    {
+      "name": "purchase-default-data.a-v-a-t-a-r-u-p-l-o-a-d-p-a-t-h",
+      "type": "java.lang.String",
+      "sourceType": "com.purchase.global.DefaultData"
+    },
+    {
+      "name": "purchase-default-data.a-v-a-t-a-r-u-r-l",
+      "type": "java.lang.String",
+      "sourceType": "com.purchase.global.DefaultData"
+    },
+    {
+      "name": "purchase-default-data.c-o-n-t-r-a-c-t-a-c-c-e-s-s-b-a-s-e-u-r-l",
+      "type": "java.lang.String",
+      "sourceType": "com.purchase.global.DefaultData"
+    },
+    {
+      "name": "purchase-default-data.c-o-n-t-r-a-c-t-u-p-l-o-a-d-b-a-s-e-p-a-t-h",
+      "type": "java.lang.String",
+      "sourceType": "com.purchase.global.DefaultData"
+    },
+    {
+      "name": "purchase-default-data.u-s-e-r-u-p-l-o-a-d-b-a-s-e-p-a-t-h",
+      "type": "java.lang.String",
+      "sourceType": "com.purchase.global.DefaultData"
+    }
+  ],
+  "hints": []
+}

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purchase.dao.mapper.ApplyMapper">
+
+    <resultMap type="com.purchase.dao.po.Apply" id="TApplyMap">
+        <result property="applyId" column="applyId" jdbcType="INTEGER"/>
+        <result property="serialNumber" column="serialNumber" jdbcType="VARCHAR"/>
+        <result property="applyname" column="applyname" jdbcType="VARCHAR"/>
+        <result property="applyUserId" column="applyUserId" jdbcType="INTEGER"/>
+        <result property="applyDepartmentId" column="applyDepartmentId" jdbcType="INTEGER"/>
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <result property="applyTime" column="applyTime" jdbcType="TIMESTAMP"/>
+        <result property="lastUpdateTime" column="lastUpdateTime" jdbcType="TIMESTAMP"/>
+        <result property="note" column="note" jdbcType="VARCHAR"/>
+        <result property="attachment" column="attachment" jdbcType="VARCHAR"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+        <result property="isDelete" column="isDelete" jdbcType="INTEGER"/>
+        <result property="putoff" column="putoff" jdbcType="INTEGER"/>
+        <result property="currentAssignUserId" column="currentAssignUserId" />
+    </resultMap>
+
+    <select id="getApplyBo" resultMap="ApplyBo" >
+        select * from t_apply where t_apply.isDelete=0
+        <if test="applyGetParam.applyUserId != null">
+            and applyUserId=#{applyGetParam.applyUserId}
+        </if>
+        <if test="applyGetParam.putoff != null">
+            and putoff=#{applyGetParam.putoff}
+        </if>
+        <if test="applyGetParam.serialNumber != null and applyGetParam.serialNumber != ''">
+            and serialNumber like  concat('%',#{applyGetParam.serialNumber},'%')
+        </if>
+        <if test="applyGetParam.applyname != null and applyGetParam.applyname != ''">
+            and applyname like  concat('%',#{applyGetParam.applyname},'%')
+        </if>
+        <if test="applyGetParam.startCreateTime != null and applyGetParam.endCreateTime != null and applyGetParam.startCreateTime != '' and applyGetParam.endCreateTime != ''">
+            and DATE(createTime) between DATE(#{applyGetParam.startCreateTime}) and DATE(#{applyGetParam.endCreateTime})
+        </if>
+        <if test="applyGetParam.note != null and applyGetParam.note != ''">
+            and note like  concat('%',#{applyGetParam.note},'%')
+        </if>
+        <if test="applyGetParam.state != null">
+            and state = ${applyGetParam.state}
+        </if>
+        <if test="applyGetParam.orderBys != null and applyGetParam.orderBys.size() > 0">
+            order by
+            <foreach collection="applyGetParam.orderBys" index="index" item="orderBy" separator=",">
+                <if test="orderBy.field =='createTime'">
+                    createTime
+                </if>
+                <if test="orderBy.field =='applyTime'">
+                    applyTime
+                </if>
+                <if test="orderBy.field =='lastUpdateTime'">
+                    lastUpdateTime
+                </if>
+                <if test="orderBy.way == 'asc'">
+                    asc
+                </if>
+                <if test="orderBy.way == 'desc'">
+                    desc
+                </if>
+            </foreach>
+        </if>
+    </select>
+    <resultMap id="ApplyBo" type="com.purchase.dao.bo.ApplyBo">
+        <result property="applyId" column="applyId" />
+        <association property="apply" javaType="com.purchase.dao.po.Apply" resultMap="TApplyMap" />
+        <association property="applyUser" javaType="com.purchase.dao.po.User"
+                     column="applyUserId" select="com.purchase.dao.mapper.UserMapper.selectById" />
+        <association property="applyDepartment" javaType="com.purchase.dao.po.Department"
+                     column="applyDepartmentId" select="com.purchase.dao.mapper.DepartmentMapper.selectById" />
+    </resultMap>
+
+    <update id="updateState" >
+        update t_apply set state =#{state} where applyId=#{applyId}
+    </update>
+    <update id="updateStateApplyTime" >
+        update t_apply set state =#{state}, applyTime=NOW(), currentAssignUserId=#{assignUserId} where applyId=#{applyId}
+    </update>
+
+    <select id="getApplyBoByUnreview" resultMap="ApplyBo">
+        select * from t_apply where t_apply.isDelete=0 and t_apply.state=#{state}
+        and t_apply.currentAssignUserId=#{userId}
+        <if test="param.orderBys != null and param.orderBys.size() > 0">
+            order by
+            <foreach collection="param.orderBys" index="index" item="orderBy" separator=",">
+                <if test="orderBy.field =='applyTime'">
+                    applyTime
+                </if>
+                <if test="orderBy.way == 'asc'">
+                    asc
+                </if>
+                <if test="orderBy.way == 'desc'">
+                    desc
+                </if>
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getApplyBoByApplyId" resultMap="ApplyBo">
+        select * from t_apply where isDelete=0 and applyId=#{applyId}
+    </select>
+
+    <update id="updateCurrentAssignUserId">
+        update t_apply set currentAssignUserId=#{assignUserId} where isDelete=0 and applyId=#{applyId}
+    </update>
+
+<!--    能查出已删除的申请,给查询审核历史记录用的-->
+    <select id="getApplyBoByApplyIdWithDeleted" resultMap="ApplyBo">
+        select * from t_apply where applyId=#{applyId}
+    </select>
+
+    <select id="getReviewdApplyBo" resultMap="ApplyBo" >
+        select * from t_apply where t_apply.isDelete=0
+                                and state in (5,6,30)
+        <if test="applyGetParam.putoff != null">
+            and putoff=#{applyGetParam.putoff}
+        </if>
+        <if test="applyGetParam.serialNumber != null and applyGetParam.serialNumber != ''">
+            and serialNumber like  concat('%',#{applyGetParam.serialNumber},'%')
+        </if>
+        <if test="applyGetParam.applyname != null and applyGetParam.applyname != ''">
+            and applyname like  concat('%',#{applyGetParam.applyname},'%')
+        </if>
+        <if test="applyGetParam.orderBys != null and applyGetParam.orderBys.size() > 0">
+            order by
+            <foreach collection="applyGetParam.orderBys" index="index" item="orderBy" separator=",">
+                <if test="orderBy.field =='createTime'">
+                    createTime
+                </if>
+                <if test="orderBy.field =='applyTime'">
+                    applyTime
+                </if>
+                <if test="orderBy.field =='lastUpdateTime'">
+                    lastUpdateTime
+                </if>
+                <if test="orderBy.way == 'asc'">
+                    asc
+                </if>
+                <if test="orderBy.way == 'desc'">
+                    desc
+                </if>
+            </foreach>
+        </if>
+    </select>
+</mapper>
+
